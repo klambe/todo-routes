@@ -1,3 +1,4 @@
+// Imports
 import { Injectable } from '@angular/core';
 import { Headers, Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
@@ -6,26 +7,22 @@ import 'rxjs/add/operator/map';
 
 import {Todo} from './todo';
 
-export interface Todo {
-  id: number | string;
-  created: number;
-  title: string;
-  complete: boolean;
-}
-
 @Injectable()
 export class TodoService {
+
+  /* Represents a value that changes over time. 
+  Observers can subscribe to the subject to receive 
+  the last (or initial) value and all subsequent notifications */
   private _todos: BehaviorSubject<Todo[]>;
 
 
-  // Base URL of RESTful service 
+  // Base URL of RESTful service - replace with your own
   private baseUrl = 'http://5830716ebb8b3a120043b65b.mockapi.io';
-  // private baseUrl = 'http://localhost:9000';
 
-  // Define header content type
+  // Define header content type - very important!
   private headers = new Headers({'Content-Type': 'application/json'});
 
-  // This is where we will store our data in memory
+  // This is for a local copy of the data
   private dataStore: {
     todos: Todo[]
   };
@@ -37,18 +34,24 @@ export class TodoService {
     this._todos = <BehaviorSubject<Todo[]>>new BehaviorSubject([]);
   }
 
+  // a public getter for _todos (public readonly)
+ 
   get todos() {
     return this._todos.asObservable();
   }
 
+  // Connect to the WS endpoint which returns all data (get)
   loadAll() {
     this.http.get(`${this.baseUrl}/todos`)
+              // Get the response and 'subscribe' it to the local data
+              // This enables ansyc update of local data
              .map(response => response.json()).subscribe(data => {
                 this.dataStore.todos = data;
                 this._todos.next(Object.assign({}, this.dataStore).todos);
               }, error => console.log('Could not load todos.'));
   }
 
+  // Connect to the WS endpoint which returns a single item by id (get)
   load(id: number | string) {
     this.http.get(`${this.baseUrl}/todos/${id}`)
              .map(response => response.json())
@@ -70,11 +73,15 @@ export class TodoService {
             }, error => console.log('Could not load todo.'));
   }
 
+  // Connect to the WS endpoint which posts data to add a new Todo (post)
   create(todo: Todo) {
     console.log(JSON.stringify(todo));
     this.http.post(`${this.baseUrl}/todos`,
+                      // Convert object to JSON
                       JSON.stringify(todo),
+                      // Send headers to define content
                       {headers: this.headers})
+                      // Update the local data with the new object
                       .map(response => response.json())
                       .subscribe(data => {
                           this.dataStore.todos.push(data);
@@ -82,12 +89,14 @@ export class TodoService {
                       }, error => console.log('Could not create todo.'));
   }
 
+  // Connect to the WS endpoint to modify a Todo (put)
   toggleTodoComplete(todo: Todo) {
     this.http.put(`${this.baseUrl}/todos/${todo.id}`,
                     JSON.stringify(todo))
                     .map(response => response.json()).subscribe(data => {
                       this.dataStore.todos.forEach((t, i) => {
                         if (t.id === data.id) {
+                          // Set complete to be opposite its current value
                           data.complete = !t.complete;
                           this.dataStore.todos[i] = data;
                         }
@@ -96,6 +105,7 @@ export class TodoService {
                     }, error => console.log('Could not update todo.'));
   }
 
+  // Connect to the WS endpoint to delete a Todo by id (delete)
   remove(todoId: number) {
     this.http.delete(`${this.baseUrl}/todos/${todoId}`)
                     .subscribe(response => {

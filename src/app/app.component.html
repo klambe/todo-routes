@@ -1,13 +1,15 @@
 <h1>Welcome to the Router Example</h1>
 
+<nav class="navbar navbar-inverse">
 
-<ul class="nav navbar-nav">
-  <li [routerLinkActive]="['active']"> <a [routerLink]="['']">Page 1</a></li>
-  <li [routerLinkActive]="['active']"> <a [routerLink]="['page2']">Page 2</a></li>
-  <li [routerLinkActive]="['active']"> <a [routerLink]="['todo']">ToDo List</a></li>
-</ul>
-<div>
-<router-outlet></router-outlet>
-</div>
+  <ul class="nav navbar-nav">
+    <li [routerLinkActive]="['active']"> <a [routerLink]="['']">Page 1</a></li>
+    <li [routerLinkActive]="['active']"> <a [routerLink]="['page2']">Page 2</a></li>
+    <li [routerLinkActive]="['active']"> <a [routerLink]="['todo']">ToDo List</a></li>
+  </ul>
+</nav>
+  <div>
+  <router-outlet></router-outlet>
+  </div>
 
 <!-- <app-todo-app></app-todo-app> -->
